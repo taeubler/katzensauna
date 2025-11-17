@@ -1,0 +1,99 @@
+/*
+ * Device Tree overlay for cberry28 by admatec 2020
+ *
+ */
+
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2835";
+
+	fragment@0 {
+		target = <&spi0>;
+		__overlay__ {
+			status = "okay";
+		};
+	};
+
+	fragment@1 {
+		target = <&spidev0>;
+		__overlay__ {
+			status = "disabled";
+		};
+	};
+
+	fragment@2 {
+		target = <&spidev1>;
+		__overlay__ {
+			status = "disabled";
+		};
+	};
+
+	fragment@3 {
+		target = <&gpio>;
+		__overlay__ {
+			cberry28_pins: cberry28_pins {
+				brcm,pins = <18 22 25>;
+				brcm,function = <1 1 1>; /* out out out */
+				brcm,pull = <0 0 0>; /* - - - */
+			};
+		};
+	};
+
+	fragment@4 {
+		target = <&spi0>;
+		__overlay__ {
+			/* needed to avoid dtc warning */
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			cberry28: cberry28@0{
+				compatible = "sitronix,st7789v";
+				reg = <0>;
+				pinctrl-names = "default";
+				pinctrl-0 = <&cberry28_pins>;
+				rgb;
+                                height = <320>;	
+				width = <240>;
+				rotate = <90>;
+				spi-max-frequency = <32000000>;
+				fps = <25>;
+				buswidth = <8>;
+				reset-gpios = <&gpio 25 1>;
+				dc-gpios = <&gpio 22 0>;
+				led-gpios = <&gpio 18 0>;
+				debug = <0>;
+
+				init = <0x1000011
+					0x2000088
+					0x1000036 0xA0
+					0x100003A 0x05
+					0x10000B2 0x0C 0x0C 0x00 0x33 0x33
+					0x10000B7 0x35
+					0x10000C2 0x01 0xFF
+					0x10000C3 0x17
+					0x10000C4 0x20
+					0x10000BB 0x17
+					0x10000C5 0x20
+					0x10000D0 0xA4 0xA1
+					0x10000E0 0xD0 0x00 0x14 0x15 0x13 0x2C 0x42 0x43 0x4E 0x09 0x16 0x14 0x18 0x21
+					0x10000E1 0xD0 0x00 0x14 0x15 0x13 0x0B 0x43 0x55 0x53 0x0C 0x17 0x14 0x23 0x20
+					0x100002B 0x00 0x00 0x01 0x3F
+					0x100002A 0x00 0x00 0x00 0x9F
+					0x1000029
+					>;
+			};
+
+		};
+	};
+
+	__overrides__ {
+		speed =     <&cberry28>,"spi-max-frequency:0";
+		rotate =    <&cberry28>,"rotate:0";
+		fps =       <&cberry28>,"fps:0";
+		debug =     <&cberry28>,"debug:0";
+		backlight = <&cberry28>,"led-gpios:4",
+		            <&cberry28_pins>,"brcm,pins:0";
+	};
+};

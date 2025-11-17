@@ -1,0 +1,45 @@
+siehe https://www.admatec.de/lp/admatec-raspberry-display-ohne-treiber-in-betrieb-nehmen/
+
+
+sudo apt-get update
+sudo apt-get upgrade
+
+sudo apt-get install -y fbi mplayer vim python3-rpi.gpio
+
+wget https://www.admatec.de/sites/default/files/downloads/cberry28.tar.gz
+tar -xzvf cberry28.tar.gz
+cd cberry28
+
+sudo dtc -@ -I dts -O dtb -o /boot/overlays/cberry28.dtbo cberry28_overlay.dts
+
+sudo vi /boot/firmware/config.txt
+-> am ende folgende Zeile hinzufügen: 
+
+dtoverlay=cberry28
+
+
+reboot
+
+TEST:
+
+ls /dev/fb*
+sudo fbi -noverbose -T 1 -a -d /dev/fb1 clogo.bmp
+sudo mplayer -nolirc -vo fbdev2:/dev/fb1 admatec.m4v
+
+
+
+RAMDISK: 
+sudo vi /etc/fstab and add: 
+tmpfs /mnt/ramdisk tmpfs nodev,nosuid,size=10M 0 0
+
+sudo mount -a
+
+sudo systemctl daemon-reload
+
+/etc/sysctl.d/99-selfmade.conf
+kernel-panic = 0
+
+/boot/firmware/config.txt:
+dtoverlay=dwc2
+
+
